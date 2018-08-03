@@ -131,6 +131,7 @@ class FloodEnv(gym.Env):
         if self.renderMode == "graphics":
             plt.imshow(self.imga)
             plt.draw()
+            plt.pause(0.5)
         
         else:
             outfile = sys.stdout
