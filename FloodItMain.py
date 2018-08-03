@@ -3,6 +3,8 @@ import gym
 from random import choice
 from collections import defaultdict
 
+from matplotlib import pyplot as plt
+
 #main function where the execusion should start
 def main():
     print ('Hello, let\'s Flood It!!!')
@@ -32,5 +34,7 @@ def main():
                     return
             
     
+
+    plt.show()
 
 main()
