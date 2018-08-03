@@ -10,28 +10,38 @@ def main():
     print ('Hello, let\'s Flood It!!!')
     env = gym.make("Flood-v0")
     observation, possible = env.reset()
-    env.render("ansi")
+    env.render()
     bestmoves = 22
     
-    done = None
     current = observation
     previous = observation
-    stop = False
+    done = False
 
-    while stop != True:
-        for row in range(0,12):
-            for column in range(len(observation[row])):
-                current = observation[row][column]
-                previous = observation[row][column-1]
-                if (current != previous):
-                    observation, reward, done, info = env.step(current)
-                    env.render("ansi")
-                    print (len(info["moves"]))
-                if (len(info["moves"]) == bestmoves):
-                    print ("Failed to complete the game")
-                    stop = True
-                    observation, possible = env.reset()
-                    return
+    stepAction = 0
+
+    env.step(2)
+    
+    env.render()
+    
+    while done != True:
+    #    for row in range(0,12):
+    #        for column in range(len(observation[row])):
+    #            current = observation[row][column]
+    #            previous = observation[row][column-1]
+
+        stepAction = (stepAction + 1) % 6
+        observation, reward, done, info = env.step(stepAction)
+
+        env.render()
+                # if (current != previous):
+                #     observation, reward, done, info = env.step(current)
+                #     env.render()
+                #     print (len(info["moves"]))
+                # if (len(info["moves"]) == bestmoves):
+                #     print ("Failed to complete the game")
+                #     stop = True
+                #     observation, possible = env.reset()
+                #     return
             
     
 
