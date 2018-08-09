@@ -130,7 +130,7 @@ class FloodEnv(gym.Env):
     def render(self, close=False):
         if self.renderMode == "graphics":
             plt.imshow(self.imga)
-            plt.title(['Steps: ', len(self.moves)])
+            plt.title('Steps: %i' %len(self.moves))
             plt.draw()
             plt.pause(0.5)
         
