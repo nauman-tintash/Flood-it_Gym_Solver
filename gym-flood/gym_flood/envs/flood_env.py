@@ -20,7 +20,7 @@ c = {"db": 0,
      "pi": 5,
 }
 
-colValues = [[0, 0, 120],[0, 0, 250],[0, 250, 0],[250, 250, 0],[250, 0, 0],[250, 250, 250]]
+colValues = [[0, 0, 250],[0, 0, 120],[0, 250, 0],[250, 250, 0],[250, 0, 0],[250, 250, 250]]
 
 # mapping for colorize
 c2 = {"db": "blue",
@@ -130,6 +130,7 @@ class FloodEnv(gym.Env):
     def render(self, close=False):
         if self.renderMode == "graphics":
             plt.imshow(self.imga)
+            plt.title(['Steps: ', len(self.moves)])
             plt.draw()
             plt.pause(0.5)
         
