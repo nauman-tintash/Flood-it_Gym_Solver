@@ -7,7 +7,6 @@ import numpy as np
 import cv2
 from matplotlib import pyplot as plt
 
-
 def convertColorValuesToID(color_grid, grid_row, grid_col) :
     colorID_grid = np.zeros((grid_row, grid_col))
 
@@ -36,14 +35,55 @@ def convertColorValuesToID(color_grid, grid_row, grid_col) :
             #For white
             elif requested_colour[1] < 100 :
                 colorID_grid[index_colors_row][index_colors_col] = 5
+    print(colorID_grid)
     return colorID_grid
     
-def getGridFromImage(img) :
-    
-    hsv_img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+def color_possibleTiles(colorID_grid, grid_row, grid_col):
+    previous_row = colorID_grid
+    current_row = colorID_grid
+    next_row = colorID_grid
+    previous_col = colorID_grid
+    current_col = colorID_grid
+    next_col = colorID_grid
+    color_grid = {}
+    count = 0
+    numOfSameTitles = 0
+    row_count = 0
+    column_count = 0
+
+    # for row in range(grid_row):
+    #     for column in range (grid_col):
+    #         previous = current = colorID_grid[row][column]
+    #         if(column+1 < grid_col):
+    #             next = colorID_grid[row][column+1]
+    #             if(current != next):
+    #                 color_grid[count] = current,next
+    #                 count = count + 1
+    #                 current = next
+    #                 break
+    #             elif (current == next):
+    #                 numOfSameTitles = numOfSameTitles + 1
+                    #break
+
+    neigbours = {}
+    for row in range(grid_row):
+        for column in range(grid_col):
+            if(row+1 < grid_row and column+1 < grid_col):
+                neigbours[count] = colorID_grid[row][column], colorID_grid[row][column+1], colorID_grid[row+1][column+1]
+                count = count + 1
+
+    # for key in color_grid:
+    #     if(key+1 < grid_col):
+    #         if(color_grid[key][0] == color_grid[key+1][0]):
+
+
+                
+    #print("Same color", neigbours)
+
+def get_binary_sobelxy(img):
     
     gray = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
-   
+
     #Along x-axis
     sobelx = np.abs(cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3))
 
@@ -66,6 +106,11 @@ def getGridFromImage(img) :
                 binary_sobely[x,:] = 255
 
     binary_sobelxy = 1.0 * binary_sobelx + 1.0 * binary_sobely
+    
+    return binary_sobelxy
+
+def getGridFromImage(img, binary_sobelxy) :
+    hsv_img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
 
     index_col = 0
     index_row = 0
@@ -76,6 +121,7 @@ def getGridFromImage(img) :
     grid_row = 0
     grid_col = 0
 
+    #print("Binary: ",binary_sobelxy)
     for index_row in range(len(binary_sobelxy)):
         if (binary_sobelxy[index_row, index_col] != 0) :
             isOnBorder = True
@@ -83,7 +129,7 @@ def getGridFromImage(img) :
             if (isOnBorder or index_row == 0):
                 isOnBorder = False
                 grid_col = 0
-                for index_col in range(len(binary_sobelxy[x])):
+                for index_col in range(len(binary_sobelxy[0])):
                     if (binary_sobelxy[index_row, index_col] != 0) :
                         isOnBorder = True
                     else:
@@ -94,6 +140,7 @@ def getGridFromImage(img) :
                 grid_row += 1
     
     colorIDGrid = convertColorValuesToID(color_grid, grid_row, grid_col)
+    color_possibleTiles(colorIDGrid, grid_row, grid_col)
     #print(colorIDGrid)
 
     return colorIDGrid
@@ -103,7 +150,9 @@ def main():
     print ('Hello, let\'s Flood It!!!')
     env = gym.make("Flood-v0")
     observation, possible = env.reset()
-    processedObservation = getGridFromImage(observation)
+
+    binary_sobelxy = get_binary_sobelxy(observation)    
+    processedObservation = getGridFromImage(observation, binary_sobelxy)
             
     env.render()
     bestmoves = 22
@@ -114,17 +163,18 @@ def main():
     while done != True:
         for row in range(len(processedObservation)):
             for column in range(len(processedObservation[row])):
+                #print(processedObservation)
                 current = processedObservation[row][column]
                 previous = processedObservation[row][column-1]
                 if (current != previous):
                     observation, reward, done, info = env.step(int(current))
-                    steps = steps + 1
-                    processedObservation = getGridFromImage(observation)
+                    processedObservation = getGridFromImage(observation, binary_sobelxy)
+                    #print(processedObservation)
                     env.render()
-                    if (len(info["moves"]) == bestmoves):
-                        print ("Failed to complete the game")
-                        observation, possible = env.reset()
-                        return
+                        # if (len(info["moves"]) == bestmoves):
+                        #     print ("Failed to complete the game")
+                        #     observation, possible = env.reset()
+                        #     return
             
 
     plt.show()
