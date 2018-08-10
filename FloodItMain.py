@@ -78,7 +78,7 @@ def color_possibleTiles(colorID_grid, grid_row, grid_col):
 
 
                 
-    #print("Same color", neigbours)
+    print("Same color", neigbours)
 
 def get_binary_sobelxy(img):
     
