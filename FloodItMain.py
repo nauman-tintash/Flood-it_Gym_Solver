@@ -35,50 +35,33 @@ def convertColorValuesToID(color_grid, grid_row, grid_col) :
             #For white
             elif requested_colour[1] < 100 :
                 colorID_grid[index_colors_row][index_colors_col] = 5
-    print(colorID_grid)
+    #print(colorID_grid)
     return colorID_grid
-    
-def color_possibleTiles(colorID_grid, grid_row, grid_col):
-    previous_row = colorID_grid
-    current_row = colorID_grid
-    next_row = colorID_grid
-    previous_col = colorID_grid
-    current_col = colorID_grid
-    next_col = colorID_grid
-    color_grid = {}
+
+def neigbours(colors, visited):
     count = 0
-    numOfSameTitles = 0
-    row_count = 0
-    column_count = 0
-
-    # for row in range(grid_row):
-    #     for column in range (grid_col):
-    #         previous = current = colorID_grid[row][column]
-    #         if(column+1 < grid_col):
-    #             next = colorID_grid[row][column+1]
-    #             if(current != next):
-    #                 color_grid[count] = current,next
-    #                 count = count + 1
-    #                 current = next
-    #                 break
-    #             elif (current == next):
-    #                 numOfSameTitles = numOfSameTitles + 1
-                    #break
-
-    neigbours = {}
-    for row in range(grid_row):
-        for column in range(grid_col):
-            if(row+1 < grid_row and column+1 < grid_col):
-                neigbours[count] = colorID_grid[row][column], colorID_grid[row][column+1], colorID_grid[row+1][column+1]
+    majorityColor = majorityVisited = None
+    is_sameColor = False
+    arr_count = 0
+    for i in range(len(colors)):
+        for j in range(i+1,len(colors)):
+            if(colors[i] == colors[j]):
                 count = count + 1
+                majorityColor = colors[i]
+                majorityVisited = visited[i]
+                is_sameColor = True
+                #print(majorityColor)
 
-    # for key in color_grid:
-    #     if(key+1 < grid_col):
-    #         if(color_grid[key][0] == color_grid[key+1][0]):
+    if(is_sameColor):
+        return majorityColor
+    else:
+        print(colors, visited, len(colors))
+        if (len(colors) > 0):
+            return colors[0]
+    # arr_count = majorityColor, majorityVisited, count
+    # print("Array: ",arr_count)
+    # return majorityColor
 
-
-                
-    print("Same color", neigbours)
 
 def get_binary_sobelxy(img):
     
@@ -108,6 +91,7 @@ def get_binary_sobelxy(img):
     binary_sobelxy = 1.0 * binary_sobelx + 1.0 * binary_sobely
     
     return binary_sobelxy
+
 
 def getGridFromImage(img, binary_sobelxy) :
     hsv_img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
@@ -140,7 +124,7 @@ def getGridFromImage(img, binary_sobelxy) :
                 grid_row += 1
     
     colorIDGrid = convertColorValuesToID(color_grid, grid_row, grid_col)
-    color_possibleTiles(colorIDGrid, grid_row, grid_col)
+    #color_possibleTiles(colorIDGrid, grid_row, grid_col)
     #print(colorIDGrid)
 
     return colorIDGrid
@@ -150,28 +134,33 @@ def main():
     print ('Hello, let\'s Flood It!!!')
     env = gym.make("Flood-v0")
     observation, possible = env.reset()
-
     binary_sobelxy = get_binary_sobelxy(observation)    
     processedObservation = getGridFromImage(observation, binary_sobelxy)
-            
+    print (processedObservation)
     env.render()
-    bestmoves = 22
-    steps = 0
+    # bestmoves = 22
+    # steps = 0
     current = previous = processedObservation
+    current = processedObservation[0][0]
     done = False
     
     while done != True:
         for row in range(len(processedObservation)):
             for column in range(len(processedObservation[row])):
                 #print(processedObservation)
-                current = processedObservation[row][column]
-                previous = processedObservation[row][column-1]
-                if (current != previous):
+                #current = processedObservation[row][column]
+                #previous = processedObservation[row][column-1]
+                #if (current != previous):
+                if(current != None):
                     observation, reward, done, info = env.step(int(current))
+                    colors, visited = info["possible"]
+                    current = neigbours(colors,visited)
+                    print("Current value: ",current)
+
                     processedObservation = getGridFromImage(observation, binary_sobelxy)
-                    #print(processedObservation)
+                    print(processedObservation)
                     env.render()
-                        # if (len(info["moves"]) == bestmoves):
+                    # if (len(info["moves"]) == bestmoves):
                         #     print ("Failed to complete the game")
                         #     observation, possible = env.reset()
                         #     return

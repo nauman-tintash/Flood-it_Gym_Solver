@@ -132,7 +132,7 @@ class FloodEnv(gym.Env):
             plt.imshow(self.imga)
             plt.title('Steps: %i' %len(self.moves))
             plt.draw()
-            plt.pause(0.5)
+            plt.pause(1.0)
         
         else:
             outfile = sys.stdout
@@ -171,7 +171,6 @@ class FloodEnv(gym.Env):
                 if self.board[tile[0]][tile[1]] == initial:
                     continue
             rettiles.append(tile)
-
         return rettiles
 
     def connected_tiles(self, row=0, col=0):
@@ -188,7 +187,6 @@ class FloodEnv(gym.Env):
                 to_visit.extend(maybe)
 
         visited.reverse()
-
         return visited
 
     def flood_board(self, color):
@@ -204,6 +202,7 @@ class FloodEnv(gym.Env):
                 if ptile not in connected and ptile not in visited:
                     visited.append(ptile)
                     colors.append(self.board[ptile[0]][ptile[1]])
+        #print("Colors: ",colors, " Visited: ",visited)
         return colors, visited
 
 
