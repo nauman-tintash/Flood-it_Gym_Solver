@@ -8,7 +8,7 @@ import cv2
 from matplotlib import pyplot as plt
 
 def convertColorValuesToID(color_grid, grid_row, grid_col) :
-    colorID_grid = np.zeros((grid_row, grid_col))
+    colorID_grid = np.zeros((grid_row, grid_col), dtype = int)
 
     for index_colors_row in range(grid_row):
         for index_colors_col in range(grid_col):
@@ -129,6 +129,14 @@ def getGridFromImage(img, binary_sobelxy) :
 
     return colorIDGrid
 
+def inputVector(observation, iterations, row, column):
+    #vectorObservation = {}
+    #output = {}
+    vectorObservation = np.zeros(iterations, row * column)
+    output = np.zeros(iterations, 6)
+
+    return vectorObservation, output
+
 #main function where the execusion should start
 def main():
     print ('Hello, let\'s Flood It!!!')
@@ -138,33 +146,50 @@ def main():
     processedObservation = getGridFromImage(observation, binary_sobelxy)
     print (processedObservation)
     env.render()
-    # bestmoves = 22
+    bestmoves = 22
     # steps = 0
     current = previous = processedObservation
     current = processedObservation[0][0]
     done = False
-    
-    while done != True:
-        for row in range(len(processedObservation)):
-            for column in range(len(processedObservation[row])):
-                #print(processedObservation)
-                #current = processedObservation[row][column]
-                #previous = processedObservation[row][column-1]
-                #if (current != previous):
-                if(current != None):
-                    observation, reward, done, info = env.step(int(current))
-                    colors, visited = info["possible"]
-                    current = neigbours(colors,visited)
-                    print("Current value: ",current)
+    iterations = 100
+    gridSize = len(processedObservation) * len(processedObservation[0])
 
-                    processedObservation = getGridFromImage(observation, binary_sobelxy)
-                    print(processedObservation)
-                    env.render()
-                    # if (len(info["moves"]) == bestmoves):
-                        #     print ("Failed to complete the game")
-                        #     observation, possible = env.reset()
-                        #     return
-            
+    print(gridSize)
+
+    X = np.zeros((iterations * bestmoves, gridSize))
+    Y = np.zeros((iterations * bestmoves, 6))
+
+
+    for index in range(iterations):
+        observation, possible = env.reset()
+        while done != True:
+            for row in range(len(processedObservation)):
+                for column in range(len(processedObservation[row])):
+                    #print(processedObservation)
+                    #current = processedObservation[row][column]
+                    #previous = processedObservation[row][column-1]
+                    #if (current != previous):
+                    if(current != None):
+                        observation, reward, done, info = env.step(int(current))
+                        colors, visited = info["possible"]
+                        current = neigbours(colors,visited)
+
+                        processedObservation = getGridFromImage(observation, binary_sobelxy)
+
+                        X[index] = processedObservation.flatten()
+                        
+                        counts = np.bincount(processedObservation.flatten())
+                        freqColor = np.argmax(counts)
+                        Y[index][freqColor] = 1
+                        
+                        #print(processedObservation)
+                        env.render()
+                        print("Current value: ",current)
+                        if (len(info["moves"]) == bestmoves):
+                                print ("Failed to complete the game")
+                                observation, possible = env.reset()
+                                return
+                
 
     plt.show()
 main()
