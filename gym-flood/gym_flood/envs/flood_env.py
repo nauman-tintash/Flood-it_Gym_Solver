@@ -109,7 +109,9 @@ class FloodEnv(gym.Env):
         return observation, reward, done, info
 
     def reset(self, renderMode = "graphics"):
-        self.board = deepcopy(MAP2)
+        # self.board = deepcopy(MAP2)
+        self.board = np.random.randint(0, 5, size = (12,12))
+
         self.start = (0, 0)
         self.moves = []
         self.renderMode = renderMode
