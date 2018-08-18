@@ -7,6 +7,8 @@ import numpy as np
 import cv2
 from matplotlib import pyplot as plt
 
+from Neural_Network import *
+
 def convertColorValuesToID(color_grid, grid_row, grid_col) :
     colorID_grid = np.zeros((grid_row, grid_col), dtype = int)
 
@@ -55,7 +57,7 @@ def neigbours(colors, visited):
     if(is_sameColor):
         return majorityColor
     else:
-        print(colors, visited, len(colors))
+       # print(colors, visited, len(colors))
         if (len(colors) > 0):
             return colors[0]
     # arr_count = majorityColor, majorityVisited, count
@@ -129,67 +131,78 @@ def getGridFromImage(img, binary_sobelxy) :
 
     return colorIDGrid
 
-def inputVector(observation, iterations, row, column):
-    #vectorObservation = {}
-    #output = {}
-    vectorObservation = np.zeros(iterations, row * column)
-    output = np.zeros(iterations, 6)
+def trainNeuralNetwork(X, y):
+    model = build_model(X, y, 3, 3, print_loss = True)
+    #print(model)
+    return model
+    
 
-    return vectorObservation, output
+def loadDataSet():
+    X = np.loadtxt("input Dataset.txt", dtype=int)
+    Y = np.loadtxt("output Dataset.txt", dtype=int)
+    print(X)
+    print(Y)
+    return X, Y
 
-#main function where the execusion should start
-def main():
-    print ('Hello, let\'s Flood It!!!')
-    env = gym.make("Flood-v0")
+def createDataSet(X,Y):
+    np.savetxt("input Dataset.txt",X, fmt= '%d')
+    np.savetxt("output Dataset.txt", Y, fmt='%d')
+
+def startSolver(env, iterations):
+    index = 0
     observation, possible = env.reset()
     binary_sobelxy = get_binary_sobelxy(observation)    
     processedObservation = getGridFromImage(observation, binary_sobelxy)
     print (processedObservation)
     env.render()
-    bestmoves = 22
-    # steps = 0
-    current = previous = processedObservation
+
     current = processedObservation[0][0]
     done = False
-    iterations = 100
     gridSize = len(processedObservation) * len(processedObservation[0])
 
-    print(gridSize)
-
-    X = np.zeros((iterations * bestmoves, gridSize))
-    Y = np.zeros((iterations * bestmoves, 6))
+    X = np.zeros((iterations, gridSize))
+    Y = np.zeros((iterations, 6))
 
 
-    for index in range(iterations):
-        observation, possible = env.reset()
-        while done != True:
-            for row in range(len(processedObservation)):
-                for column in range(len(processedObservation[row])):
-                    #print(processedObservation)
-                    #current = processedObservation[row][column]
-                    #previous = processedObservation[row][column-1]
-                    #if (current != previous):
-                    if(current != None):
-                        observation, reward, done, info = env.step(int(current))
-                        colors, visited = info["possible"]
-                        current = neigbours(colors,visited)
+    while index < iterations:
+        if(current != None):
+            observation, reward, done, info = env.step(int(current))
+            colors, visited = info["possible"]
+            current = neigbours(colors,visited)
 
-                        processedObservation = getGridFromImage(observation, binary_sobelxy)
+            processedObservation = getGridFromImage(observation, binary_sobelxy)
 
-                        X[index] = processedObservation.flatten()
-                        
-                        counts = np.bincount(processedObservation.flatten())
-                        freqColor = np.argmax(counts)
-                        Y[index][freqColor] = 1
-                        
-                        #print(processedObservation)
-                        env.render()
-                        print("Current value: ",current)
-                        if (len(info["moves"]) == bestmoves):
-                                print ("Failed to complete the game")
-                                observation, possible = env.reset()
-                                return
-                
+            X[index] = processedObservation.flatten()
+            
+            counts = np.bincount(processedObservation.flatten())
+            freqColor = np.argmax(counts)
+            Y[index][freqColor] = 1
+            #print(processedObservation)
+            env.render()
+            print("Current value: ",current)
+            #print(Y)
+            index = index + 1
+            # if (len(info["moves"]) == bestmoves):
+            #         print ("Failed to complete the game")
+            #         observation, possible = env.reset()
+            #         return
+            if (done == True):
+                observation, possible =  env.reset()
+    return X, Y
 
+#main function where the execusion should start
+def main():
+    print ('Hello, let\'s Flood It!!!')
+    env = gym.make("Flood-v0")
+    iterations = 10
+    index = 0
+
+    X, y = startSolver(env, iterations)        
+    
+    createDataSet(X,y)
+    X1, y1 = loadDataSet()
+    model = trainNeuralNetwork(X1, y1)
+    visualize(X1[0],y1, model)
     plt.show()
+
 main()
