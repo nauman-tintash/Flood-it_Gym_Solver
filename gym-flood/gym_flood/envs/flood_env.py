@@ -134,7 +134,7 @@ class FloodEnv(gym.Env):
             plt.imshow(self.imga)
             plt.title('Steps: %i' %len(self.moves))
             plt.draw()
-            plt.pause(1.0)
+            #plt.pause(0.0)
         
         else:
             outfile = sys.stdout

@@ -132,7 +132,7 @@ def getGridFromImage(img, binary_sobelxy) :
     return colorIDGrid
 
 def trainNeuralNetwork(X, y):
-    model = build_model(X, y, 3, 3, print_loss = True)
+    model = build_model(X, y, 50, print_loss = True)
     #print(model)
     return model
     
@@ -140,8 +140,6 @@ def trainNeuralNetwork(X, y):
 def loadDataSet():
     X = np.loadtxt("input Dataset.txt", dtype=int)
     Y = np.loadtxt("output Dataset.txt", dtype=int)
-    print(X)
-    print(Y)
     return X, Y
 
 def createDataSet(X,Y):
@@ -153,18 +151,19 @@ def startSolver(env, iterations):
     observation, possible = env.reset()
     binary_sobelxy = get_binary_sobelxy(observation)    
     processedObservation = getGridFromImage(observation, binary_sobelxy)
-    print (processedObservation)
-    env.render()
+    #print (processedObservation)
+    #env.render()
 
     current = processedObservation[0][0]
     done = False
     gridSize = len(processedObservation) * len(processedObservation[0])
 
     X = np.zeros((iterations, gridSize))
-    Y = np.zeros((iterations, 6))
+    Y = np.zeros((iterations))
 
 
     while index < iterations:
+        print("Number of iterations: ",index)
         if(current != None):
             observation, reward, done, info = env.step(int(current))
             colors, visited = info["possible"]
@@ -176,10 +175,10 @@ def startSolver(env, iterations):
             
             counts = np.bincount(processedObservation.flatten())
             freqColor = np.argmax(counts)
-            Y[index][freqColor] = 1
+            Y[index] = freqColor
             #print(processedObservation)
-            env.render()
-            print("Current value: ",current)
+            #env.render()
+            #print("Current value: ",current)
             #print(Y)
             index = index + 1
             # if (len(info["moves"]) == bestmoves):
@@ -188,21 +187,25 @@ def startSolver(env, iterations):
             #         return
             if (done == True):
                 observation, possible =  env.reset()
+                processedObservation = getGridFromImage(observation, binary_sobelxy)
+                current = processedObservation[0][0]
     return X, Y
 
 #main function where the execusion should start
 def main():
     print ('Hello, let\'s Flood It!!!')
     env = gym.make("Flood-v0")
-    iterations = 10
+    iterations = 1000
     index = 0
 
-    X, y = startSolver(env, iterations)        
+    #X, y = startSolver(env, iterations)        
     
-    createDataSet(X,y)
+    #createDataSet(X,y)
     X1, y1 = loadDataSet()
     model = trainNeuralNetwork(X1, y1)
-    visualize(X1[0],y1, model)
+
+    for i in range(100,200):
+        visualize(X1[i],y1, model)
     plt.show()
 
 main()
