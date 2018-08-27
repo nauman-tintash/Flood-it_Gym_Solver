@@ -132,27 +132,34 @@ def getGridFromImage(img, binary_sobelxy) :
     return colorIDGrid
 
 def trainNeuralNetwork(X, y):
-    model = build_model(X, y, 50, print_loss = True)
+    model = build_model(X, y, 24, print_loss = True)
     #print(model)
     return model
     
 
 def loadDataSet():
-    X = np.loadtxt("input Dataset.txt", dtype=int)
-    Y = np.loadtxt("output Dataset.txt", dtype=int)
-    return X, Y
+    X = np.loadtxt("train_X.txt", dtype=int)
+    Y = np.loadtxt("train_Y.txt", dtype=int)
 
-def createDataSet(X,Y):
-    np.savetxt("input Dataset.txt",X, fmt= '%d')
-    np.savetxt("output Dataset.txt", Y, fmt='%d')
+    test_X = np.loadtxt("test_X.txt", dtype=int)
+    test_Y = np.loadtxt("test_Y.txt", dtype=int)
+    
+    return X, Y, test_X, test_Y
+
+def createDataSet(X,Y, test_X, test_Y):
+    np.savetxt("train_X.txt",X, fmt= '%d')
+    np.savetxt("train_Y.txt", Y, fmt='%d')
+
+    np.savetxt("test_X.txt",test_X, fmt= '%d')
+    np.savetxt("test_Y.txt", test_Y, fmt='%d')
 
 def startSolver(env, iterations):
     index = 0
     observation, possible = env.reset()
     binary_sobelxy = get_binary_sobelxy(observation)    
     processedObservation = getGridFromImage(observation, binary_sobelxy)
-    #print (processedObservation)
-    #env.render()
+    # print ('reset : ', processedObservation)
+    # env.render()
 
     current = processedObservation[0][0]
     done = False
