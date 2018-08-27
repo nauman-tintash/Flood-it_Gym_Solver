@@ -163,49 +163,74 @@ def startSolver(env, iterations):
 
 
     while index < iterations:
-        print("Number of iterations: ",index)
+        # print("Number of iterations: ",index)
         if(current != None):
-            observation, reward, done, info = env.step(int(current))
-            colors, visited = info["possible"]
-            current = neigbours(colors,visited)
+            # observation, reward, done, info = env.step(int(current))
+            # colors, visited = info["possible"]
+            # current = neigbours(colors,visited)
 
-            processedObservation = getGridFromImage(observation, binary_sobelxy)
+            # processedObservation = getGridFromImage(observation, binary_sobelxy)
 
             X[index] = processedObservation.flatten()
             
             counts = np.bincount(processedObservation.flatten())
             freqColor = np.argmax(counts)
             Y[index] = freqColor
-            #print(processedObservation)
-            #env.render()
-            #print("Current value: ",current)
-            #print(Y)
+            # print(processedObservation)
+            # env.render()
+            # print("Current value: ",current)
+            # print(Y)
             index = index + 1
             # if (len(info["moves"]) == bestmoves):
             #         print ("Failed to complete the game")
             #         observation, possible = env.reset()
             #         return
-            if (done == True):
-                observation, possible =  env.reset()
-                processedObservation = getGridFromImage(observation, binary_sobelxy)
-                current = processedObservation[0][0]
+            # if (done == True):
+            observation, possible =  env.reset()
+            processedObservation = getGridFromImage(observation, binary_sobelxy)
+            current = processedObservation[0][0]
     return X, Y
 
 #main function where the execusion should start
 def main():
     print ('Hello, let\'s Flood It!!!')
     env = gym.make("Flood-v0")
-    iterations = 1000
-    index = 0
+    iterations = 500
 
-    #X, y = startSolver(env, iterations)        
+    trainX, trainY = startSolver(env, iterations)
+
+    iterations = 100
+    testX, testY = startSolver(env, iterations)
+
+    createDataSet(trainX, trainY, testX, testY)
+
+    trainX1, trainY1, testX1, testY1 = loadDataSet()
+    model = trainNeuralNetwork(trainX1, trainY1)
+
+    incorrectLabels = 0
+
+    # np.save('model.npy', model)
+    # model = np.load('model.npy').item()
+    for i in range(len(testX1)):
+        instance = i
+        # print(X1[instance])
+        predictedLabel = predict(model, testX1[instance])
+        if predictedLabel != testY1[instance]:
+            incorrectLabels += 1
+
+    errorRate = incorrectLabels/len(testX1)
+    print('test errorRate : ' , errorRate)
+
+    for j in range(len(trainX1)):
+        instance = j
+        # print(X1[instance])
+        predictedLabel = predict(model, trainX1[instance])
+        if predictedLabel != trainY1[instance]:
+            incorrectLabels += 1
+
+    errorRate = incorrectLabels/len(trainX1)
+    print('train errorRate : ' , errorRate)
     
-    #createDataSet(X,y)
-    X1, y1 = loadDataSet()
-    model = trainNeuralNetwork(X1, y1)
-
-    for i in range(100,200):
-        visualize(X1[i],y1, model)
-    plt.show()
+    # plt.show()
 
 main()
