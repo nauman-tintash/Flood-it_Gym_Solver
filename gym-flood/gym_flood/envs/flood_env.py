@@ -112,6 +112,32 @@ class FloodEnv(gym.Env):
         # self.board = deepcopy(MAP2)
         self.board = np.random.randint(0, 5, size = (12,12))
 
+        col1 = np.random.randint(0, 2)
+        col2 = np.random.randint(2, 4)
+        col3 = np.random.randint(4, 6)
+
+        colors = np.array([col1,col2,col3])
+        np.random.shuffle(colors)
+        colors = np.append(colors, colors[0])
+        np.random.shuffle(colors)
+
+        for q1row in range(0, 6):
+            for q1col in range(0,6):
+                self.board[q1row][q1col] = colors[0]
+        
+        for q2row in range(6, 12):
+            for q2col in range(0,6):
+                self.board[q2row][q2col] = colors[1]
+        
+        
+        for q3row in range(0, 6):
+            for q3col in range(6,12):
+                self.board[q3row][q3col] = colors[2]
+
+        for q4row in range(6, 12):
+            for q4col in range(6,12):
+                self.board[q4row][q4col] = colors[3]
+        
         self.start = (0, 0)
         self.moves = []
         self.renderMode = renderMode
