@@ -60,7 +60,7 @@ def predict(model, x):
 # - nn_hdim: Number of nodes in the hidden layer
 # - num_passes: Number of passes through the training data for gradient descent
 # - print_loss: If True, print the loss every 1000 iterations
-def build_model(X, y, nn_hdim, num_passes=700, print_loss=False):
+def build_model(X, y, nn_hdim, num_passes=5000, print_loss=False):
 
     nn_input_dim = 4 
     nn_output_dim = 6

@@ -132,7 +132,7 @@ def getGridFromImage(img, binary_sobelxy) :
     return colorIDGrid
 
 def trainNeuralNetwork(X, y):
-    model = build_model(X,y, 40)
+    model = build_model(X,y, 24)
     #print(model)
     return model
     
@@ -202,14 +202,14 @@ def startSolver(env, iterations):
 def main():
     print ('Hello, let\'s Flood It!!!')
     env = gym.make("Flood-v0")
-    # iterations = 500
+    iterations = 200
 
-    # trainX, trainY = startSolver(env, iterations)
+    trainX, trainY = startSolver(env, iterations)
 
-    # iterations = 100
-    # testX, testY = startSolver(env, iterations)
+    iterations = 100
+    testX, testY = startSolver(env, iterations)
 
-    # createDataSet(trainX, trainY, testX, testY)
+    createDataSet(trainX, trainY, testX, testY)
 
     trainX1, trainY1, testX1, testY1 = loadDataSet()
     model = trainNeuralNetwork(trainX1, trainY1)
