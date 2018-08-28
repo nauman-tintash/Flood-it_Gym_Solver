@@ -132,7 +132,7 @@ def getGridFromImage(img, binary_sobelxy) :
     return colorIDGrid
 
 def trainNeuralNetwork(X, y):
-    model = build_model(X, y, 24, print_loss = True)
+    model = build_model(X,y, 40)
     #print(model)
     return model
     
@@ -159,7 +159,7 @@ def startSolver(env, iterations):
     binary_sobelxy = get_binary_sobelxy(observation)    
     processedObservation = getGridFromImage(observation, binary_sobelxy)
     # print ('reset : ', processedObservation)
-    # env.render()
+    env.render()
 
     current = processedObservation[0][0]
     done = False
@@ -184,7 +184,7 @@ def startSolver(env, iterations):
             freqColor = np.argmax(counts)
             Y[index] = freqColor
             # print(processedObservation)
-            # env.render()
+            env.render()
             # print("Current value: ",current)
             # print(Y)
             index = index + 1
@@ -202,25 +202,32 @@ def startSolver(env, iterations):
 def main():
     print ('Hello, let\'s Flood It!!!')
     env = gym.make("Flood-v0")
-    iterations = 500
+    # iterations = 500
 
-    trainX, trainY = startSolver(env, iterations)
+    # trainX, trainY = startSolver(env, iterations)
 
-    iterations = 100
-    testX, testY = startSolver(env, iterations)
+    # iterations = 100
+    # testX, testY = startSolver(env, iterations)
 
-    createDataSet(trainX, trainY, testX, testY)
+    # createDataSet(trainX, trainY, testX, testY)
 
     trainX1, trainY1, testX1, testY1 = loadDataSet()
     model = trainNeuralNetwork(trainX1, trainY1)
 
+    #model = build_model(trainX1,20,2)
+    # model, losses = train(model,trainX1, trainY1, reg_lambda= Neural_Network.reg_lambda, learning_rate= Neural_Network.learning_rate)
+    
     incorrectLabels = 0
+    
 
     # np.save('model.npy', model)
     # model = np.load('model.npy').item()
     for i in range(len(testX1)):
         instance = i
         # print(X1[instance])
+        # z1, a1, z2, a2, z3, output = feed_forward(model, testX1[instance])
+        # predictedLabel = np.argmax(output, axis=1)
+
         predictedLabel = predict(model, testX1[instance])
         if predictedLabel != testY1[instance]:
             incorrectLabels += 1
@@ -228,9 +235,13 @@ def main():
     errorRate = incorrectLabels/len(testX1)
     print('test errorRate : ' , errorRate)
 
+    incorrectLabels = 0
     for j in range(len(trainX1)):
         instance = j
         # print(X1[instance])
+        # z1, a1, z2, a2, z3, output = feed_forward(model, trainX1[instance])
+        # predictedLabel = np.argmax(output, axis=1)
+
         predictedLabel = predict(model, trainX1[instance])
         if predictedLabel != trainY1[instance]:
             incorrectLabels += 1
