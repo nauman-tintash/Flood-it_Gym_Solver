@@ -12,6 +12,7 @@ class neuralNetwork():
     eps = 0.01 #Learning rate for gradient descent
     regularization = 0.01 #Regularization strength 
 
+
 #Loss function
 def calculate(model, X, y):
     #Implementing neural network

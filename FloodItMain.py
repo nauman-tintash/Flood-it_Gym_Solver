@@ -7,7 +7,8 @@ import numpy as np
 import cv2
 from matplotlib import pyplot as plt
 
-from Neural_Network import *
+#from Neural_Network import *
+from Tensorflow import * 
 
 def convertColorValuesToID(color_grid, grid_row, grid_col) :
     colorID_grid = np.zeros((grid_row, grid_col), dtype = int)
@@ -131,10 +132,10 @@ def getGridFromImage(img, binary_sobelxy) :
 
     return colorIDGrid
 
-def trainNeuralNetwork(X, y):
-    model = build_model(X,y, 24)
+def trainNeuralNetwork(X, y, sess):
+    activation, PlaceHolderX = build_model(X,y, 24, sess)
     #print(model)
-    return model
+    return activation, PlaceHolderX
     
 
 def loadDataSet():
@@ -202,53 +203,55 @@ def startSolver(env, iterations):
 def main():
     print ('Hello, let\'s Flood It!!!')
     env = gym.make("Flood-v0")
-    iterations = 200
 
-    trainX, trainY = startSolver(env, iterations)
+    with tf.Session() as sess:
+        iterations = 200
 
-    iterations = 100
-    testX, testY = startSolver(env, iterations)
+        trainX, trainY = startSolver(env, iterations)
 
-    createDataSet(trainX, trainY, testX, testY)
+        iterations = 100
+        testX, testY = startSolver(env, iterations)
 
-    trainX1, trainY1, testX1, testY1 = loadDataSet()
-    model = trainNeuralNetwork(trainX1, trainY1)
+        createDataSet(trainX, trainY, testX, testY)
 
-    #model = build_model(trainX1,20,2)
-    # model, losses = train(model,trainX1, trainY1, reg_lambda= Neural_Network.reg_lambda, learning_rate= Neural_Network.learning_rate)
-    
-    incorrectLabels = 0
-    
+        trainX1, trainY1, testX1, testY1 = loadDataSet()
+        activation, PlaceHolderX = trainNeuralNetwork(trainX1, trainY1,sess)
 
-    # np.save('model.npy', model)
-    # model = np.load('model.npy').item()
-    for i in range(len(testX1)):
-        instance = i
-        # print(X1[instance])
-        # z1, a1, z2, a2, z3, output = feed_forward(model, testX1[instance])
-        # predictedLabel = np.argmax(output, axis=1)
+        #model = build_model(trainX1,20,2)
+        # model, losses = train(model,trainX1, trainY1, reg_lambda= Neural_Network.reg_lambda, learning_rate= Neural_Network.learning_rate)
+        
+        incorrectLabels = 0
+        predictedLabel = predict(activation, PlaceHolderX, testX1)
+        # np.save('model.npy', model)
+        # model = np.load('model.npy').item()
+        for i in range(len(testX1)):
+            instance = i
+            # print(X1[instance])
+            # z1, a1, z2, a2, z3, output = feed_forward(model, testX1[instance])
+            # predictedLabel = np.argmax(output, axis=1)
+            if predictedLabel[instance] != testY1[instance]:
+                incorrectLabels += 1
 
-        predictedLabel = predict(model, testX1[instance])
-        if predictedLabel != testY1[instance]:
-            incorrectLabels += 1
+        errorRate = incorrectLabels/len(testX1)
+        print('test errorRate : ' , errorRate)
 
-    errorRate = incorrectLabels/len(testX1)
-    print('test errorRate : ' , errorRate)
 
-    incorrectLabels = 0
-    for j in range(len(trainX1)):
-        instance = j
-        # print(X1[instance])
-        # z1, a1, z2, a2, z3, output = feed_forward(model, trainX1[instance])
-        # predictedLabel = np.argmax(output, axis=1)
+        predictedLabel = predict(activation, PlaceHolderX, trainX1)
+        incorrectLabels = 0
+        for j in range(len(trainX1)):
+            instance = j
+            # print(X1[instance])
+            # z1, a1, z2, a2, z3, output = feed_forward(model, trainX1[instance])
+            # predictedLabel = np.argmax(output, axis=1)
+            #predictedLabel  = np.argmax(predictedLabel[instance])
+            #print(predictedLabel)
+            if predictedLabel[instance] != trainY1[instance]:
+                incorrectLabels += 1
 
-        predictedLabel = predict(model, trainX1[instance])
-        if predictedLabel != trainY1[instance]:
-            incorrectLabels += 1
-
-    errorRate = incorrectLabels/len(trainX1)
-    print('train errorRate : ' , errorRate)
-    
-    # plt.show()
+        errorRate = incorrectLabels/len(trainX1)
+        print('train errorRate : ' , errorRate)
+        
+        # plt.show()
+    sess.close()
 
 main()
