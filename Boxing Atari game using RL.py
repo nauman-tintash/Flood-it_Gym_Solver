@@ -1,5 +1,6 @@
 import gym
 import numpy as np
+import _pickle as pickle
 
 def downsample(image):
     # Take only alternate pixels - basically halves the resolution of the image (which is fine for us)
@@ -121,28 +122,37 @@ def main():
     output_dimensions = 5
     learning_rate = 1e-4
 
+    resume = True # resume from previous checkpoint?
+    render = False
+
     reward_sum = 0
     running_reward = None
     prev_processed_observations = None
 
-    weights = {
-        'W1': np.random.randn(num_hidden_layer_neurons, input_dimensions) / np.sqrt(input_dimensions),
-        'W2': np.random.randn(num_hidden_layer_neurons, output_dimensions) / np.sqrt(num_hidden_layer_neurons)
-    }
+    if resume:
+        weights = pickle.load(open('save_icehockey_weights.p', 'rb'))
+        expectation_g_squared = pickle.load(open('save_icehockey_expectation_g_squared.p', 'rb'))
+        g_dict = pickle.load(open('save_icehockey_g_dict.p', 'rb'))
 
 
-    expectation_g_squared = {}
-    g_dict = {}
+    else:
+        weights = {
+            'W1': np.random.randn(num_hidden_layer_neurons, input_dimensions) / np.sqrt(input_dimensions),
+            'W2': np.random.randn(num_hidden_layer_neurons, output_dimensions) / np.sqrt(num_hidden_layer_neurons)
+        }
 
-    for layer_name in weights.keys():
-        expectation_g_squared[layer_name] = np.zeros_like(weights[layer_name])
-        g_dict[layer_name] = np.zeros_like(weights[layer_name])
+        expectation_g_squared = {}
+        g_dict = {}
 
+        for layer_name in weights.keys():
+            expectation_g_squared[layer_name] = np.zeros_like(weights[layer_name])
+            g_dict[layer_name] = np.zeros_like(weights[layer_name])
 
     episode_hidden_layer_values, episode_observations, episode_gradient_log_ps, episode_rewards = [], [], [], []
 
     while True:
-        env.render()
+        if render:
+            env.render()
         processed_observations, prev_processed_observations = preprocess_observations(observation, prev_processed_observations, input_dimensions)
         hidden_layer_values, output_layer_values = apply_neural_nets(processed_observations, weights)
     
@@ -194,6 +204,14 @@ def main():
             observation = env.reset() # reset env
             running_reward = reward_sum if running_reward is None else running_reward * 0.99 + reward_sum * 0.01
             print ('resetting env. episode reward total was %f. running mean: %f' % (reward_sum, running_reward))
+
+            if episode_number % 10 == 0: 
+                pickle.dump(weights, open('save_icehockey_weights.p', 'wb'))
+                pickle.dump(expectation_g_squared, open('save_icehockey_expectation_g_squared.p', 'wb'))
+                pickle.dump(g_dict, open('save_icehockey_g_dict.p', 'wb'))
+                
+                print('-----------------Saved Data--------------------')
+
             reward_sum = 0
             prev_processed_observations = None
 
