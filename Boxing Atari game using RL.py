@@ -65,16 +65,12 @@ def choose_action(probability):
 
 def compute_gradient(gradient_log_p, hidden_layer_values, observation_values, weights):
     delta_L = gradient_log_p
-    dC_dw2 = np.dot(hidden_layer_values.T, delta_L).ravel()
-    print("DC_dw2:",np.shape(dC_dw2))
-    print("delta l", np.shape(delta_L))
-    print("weights:",np.shape(weights['W2']))
-    delta_l2 = np.outer(delta_L, weights['W2'])
+    dC_dw2 = np.dot(hidden_layer_values.T, delta_L)
+    # delta_l2 = np.outer(delta_L, weights['W2'])
+    delta_l2 = np.dot(delta_L, weights['W2'].T)
     delta_l2 = relu(delta_l2)
-    print("delta 2:",np.shape(delta_l2))
-    print("observation:",np.shape(observation_values))
     dC_dw1 = np.dot(delta_l2.T, observation_values)
-    print("dc_dw1:",np.shape(dC_dw1))
+
     return {
         'W1': dC_dw1,
         'W2': dC_dw2
