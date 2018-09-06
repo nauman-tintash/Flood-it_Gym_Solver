@@ -202,8 +202,9 @@ def main():
             
             episode_hidden_layer_values, episode_observations, episode_gradient_log_ps, episode_rewards = [], [], [], [] # reset values
             observation = env.reset() # reset env
-            running_reward = reward_sum if running_reward is None else running_reward * 0.99 + reward_sum * 0.01
-            print ('resetting env. episode reward total was %f. running mean: %f' % (reward_sum, running_reward))
+            
+            running_reward = reward_sum if running_reward is None else running_reward + reward_sum
+            print ('resetting env. episode reward total was %f. running mean: %f' % (reward_sum, running_reward/episode_number))
 
             if episode_number % 10 == 0: 
                 pickle.dump(weights, open('save_icehockey_weights.p', 'wb'))
